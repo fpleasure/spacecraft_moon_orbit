@@ -7,15 +7,15 @@
 ### Содержание репозитория
 
 ```
-├── img                   			# Графики
-├── results                		 	# Результаты
-├── src                    		    # Файлы программы
-│   ├──files.py               		# Вывод в файл
-│   ├──spacecraft_algorithm.py		# Алгоритм задачи
-│   ├──parametrs.py					# Параметры
+├── img                             # Графики
+├── results                         # Результаты
+├── src                             # Файлы программы
+│   ├──files.py                     # Вывод в файл
+│   ├──spacecraft_algorithm.py      # Алгоритм задачи
+│   ├──parametrs.py                 # Параметры
 │   ├──runge_kutta.py               # Методы РК
-│   ├──tests.py						# Тесты
-│   ├──main.py						# Главный файл
+│   ├──tests.py                     # Тесты
+│   ├──main.py                      # Главный файл
 ├── requirements.txt
 └── README.md
 ```
