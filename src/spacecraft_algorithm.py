@@ -41,7 +41,6 @@ def get_secant_method_step_for_theta(u: list, t: float, tau: float, theta_1: flo
 
     # Вычисляем значения функций условий для вычисления Якобиана
     dtheta_dt_1 = ANGLE_CONDITION(u_1[0], u_1[1], u_1[2], u_1[3])
-    dtheta_dt_1 = ANGLE_CONDITION(u_1[0], u_1[1], u_1[2], u_1[3])
     dtheta_dt_2 = ANGLE_CONDITION(u_2[0], u_2[1], u_2[2], u_2[3])
     dtheta_dt_3 = ANGLE_CONDITION(u_3[0], u_3[1], u_3[2], u_3[3])
 
