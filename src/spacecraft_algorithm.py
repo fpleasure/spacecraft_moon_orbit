@@ -9,7 +9,7 @@ from files import *
 
 def get_secant_method_step_for_theta(u: list, t: float, tau: float, theta_1: float,
                                      theta_2: float, t_1: float, t_2: float,
-                                     delta: float = 1e-5):
+                                     delta: float = 1e-12):
     """
     Выполняет один шаг метода секущих для определения новых значений параметров theta_1 и theta_2
 
@@ -74,7 +74,7 @@ def get_secant_method_step_for_theta(u: list, t: float, tau: float, theta_1: flo
 
 def get_theta(u: list, t: float, tau: float, theta_1: float,
               theta_2: float, t_1: float, t_2: float, delta: float = 1e-5,
-              eps_radius_vector: float = 1e-3, eps_angle: float = 1e-5):
+              eps_radius_vector: float = 1e-7, eps_angle: float = 1e-9):
     """
     Определяет параметры theta_1 и theta_2 с помощью метода секущих для обеспечения
     выполнения заданных условий по радиус-вектору и углу.
@@ -118,8 +118,8 @@ def get_theta(u: list, t: float, tau: float, theta_1: float,
 
 
 def spacecraft_algorithm(u_0: list, t_0: float, tau: float, theta_1: float, theta_2:
-                         float, t_1: float, t_2: float, max_iterations: int = 15000,
-                         eps: float = 1e-4, delta: float = 1e-7):
+                         float, t_1: float, t_2: float, max_iterations: int = 1500000,
+                         eps: float = 1e-9, delta: float = 1e-12):
     """Определение программы выведения КА на орбиту искусственного спутника Луны
 
     Параметры:
@@ -157,17 +157,31 @@ def spacecraft_algorithm(u_0: list, t_0: float, tau: float, theta_1: float, thet
         print(f"[INFO] Make step spacecraft_algorithm: t: {t}, V_x: {u[0]:.3f}, V_y: {
             u[1]:.3f}, x: {u[2]:.3f}, y: {u[3]:.3f}, m: {u[4]:.3f}.")
         print(f"[INFO] Stop condition (speed condition): {
-              stop_condition:.7f}.")
+            stop_condition:.7f}.")
         print(
-            f"[IBFO] Stop condition (radius-vector): {RADIUS_VECTOR_CONDITION(u[2], u[3]):.15f}")
+            f"[INFO] Stop condition (radius-vector): {RADIUS_VECTOR_CONDITION(u[2], u[3]):.15f}")
         print(f"[INFO] Stop condition (angle): {
-              ANGLE_CONDITION(u[0], u[1], u[2], u[3]):.7f}")
+            ANGLE_CONDITION(u[0], u[1], u[2], u[3]):.7f}")
 
         # Отыскание theta_1 и theta_2 с помошью метода секущих
+        '''
         if ((t > T_V and t <= t_1) or t >= t_2) and not find_theta:
             theta_1, theta_2 = get_theta(
                 u, t, tau, theta_1, theta_2, t_1, t_2, delta)
             find_theta = True
+
+            def function_right_side(u, t): return FUNCTION_RIGHT_SIDE(
+                u, t, theta_1, theta_2, t_1, t_2)
+        '''
+
+        if t < t_1 and t > T_V:
+            u = runge_kutta_4_step(u, t, tau, function_right_side)
+            if t + tau >= t_1 and (t + tau - t_1) > eps:
+                u = runge_kutta_4_step(u, t, t_1 - t, function_right_side)
+                log_iteration_values(t_1, u)
+            t += tau
+            iterations += 1
+            continue
 
         # Шаг метода Рунге-Кутты
         u = runge_kutta_4_step(u, t, tau, function_right_side)
@@ -179,6 +193,14 @@ def spacecraft_algorithm(u_0: list, t_0: float, tau: float, theta_1: float, thet
             print(f"[INFO] Crash step: tau: {tau}.")
 
         stop_condition = SPEED_CONDITION(u[0], u[1])
+
+        if (t < T_V and t + tau > T_V and (t + tau - T_V) > eps):
+            u = runge_kutta_4_step(u, t, T_V - t, function_right_side)
+            log_iteration_values(T_V, u)
+
+        if (t < t_2 and t + tau > t_2 and (t + tau - t_2) > eps):
+            u = runge_kutta_4_step(u, t, t_2 - t, function_right_side)
+            log_iteration_values(t_2, u)
 
         solution.append(u[:])
         t += tau
@@ -218,3 +240,4 @@ def make_plot(solution: list, filename="img/spacecraft_algorithm.pdf"):
     plt.ylabel("y, м")
     plt.grid()
     plt.savefig(filename)
+    print(f"[INFO] Save plot at '{filename}'.")
