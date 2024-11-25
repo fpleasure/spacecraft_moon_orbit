@@ -148,12 +148,20 @@ def spacecraft_algorithm(u_0: list, t_0: float, tau: float, theta_1: float, thet
     iterations = 0
     find_theta = False  # Индикатор нахождения theta_1 и theta_2
     stop_condition = SPEED_CONDITION(u[0], u[1])
+    P_flag = True
 
     def function_right_side(u, t): return FUNCTION_RIGHT_SIDE(
-        u, t, theta_1, theta_2, t_1, t_2)
+        u, t, theta_1, theta_2, t_1, t_2, P)
 
     while abs(stop_condition) > eps:
         log_iteration_values(t, u)
+        if P_flag:
+            def function_right_side(u, t): return FUNCTION_RIGHT_SIDE(
+                u, t, theta_1, theta_2, t_1, t_2, lambda t, t_1, t_2: 10.27 * 10 ** 3)
+        else:
+            def function_right_side(u, t): return FUNCTION_RIGHT_SIDE(
+                u, t, theta_1, theta_2, t_1, t_2, lambda t, t_1, t_2: 0)
+
         print(f"[INFO] Make step spacecraft_algorithm: t: {t}, V_x: {u[0]:.3f}, V_y: {
             u[1]:.3f}, x: {u[2]:.3f}, y: {u[3]:.3f}, m: {u[4]:.3f}.")
         print(f"[INFO] Stop condition (speed condition): {
@@ -175,10 +183,18 @@ def spacecraft_algorithm(u_0: list, t_0: float, tau: float, theta_1: float, thet
         '''
 
         if t < t_1 and t > T_V:
-            u = runge_kutta_4_step(u, t, tau, function_right_side)
-            if t + tau >= t_1 and (t + tau - t_1) > eps:
+            if abs(t - t_1) < eps:
+                solution.append(u[:])
+                t += tau
+                iterations += 1
+                P_flag = False
+                continue
+
+            if t + tau >= t_1:
                 u = runge_kutta_4_step(u, t, t_1 - t, function_right_side)
-                log_iteration_values(t_1, u)
+                P_flag = False
+            u = runge_kutta_4_step(u, t, tau, function_right_side)
+            solution.append(u[:])
             t += tau
             iterations += 1
             continue
@@ -194,13 +210,23 @@ def spacecraft_algorithm(u_0: list, t_0: float, tau: float, theta_1: float, thet
 
         stop_condition = SPEED_CONDITION(u[0], u[1])
 
-        if (t < T_V and t + tau > T_V and (t + tau - T_V) > eps):
+        if (t < T_V and t + tau > T_V):
+            P_flag = True
+            if abs(t - T_V) < eps:
+                solution.append(u[:])
+                t += tau
+                iterations += 1
+                continue
             u = runge_kutta_4_step(u, t, T_V - t, function_right_side)
-            log_iteration_values(T_V, u)
 
-        if (t < t_2 and t + tau > t_2 and (t + tau - t_2) > eps):
+        if (t < t_2 and t + tau > t_2):
+            P_flag = True
+            if abs(t - t_2) < eps:
+                solution.append(u[:])
+                t += tau
+                iterations += 1
+                continue
             u = runge_kutta_4_step(u, t, t_2 - t, function_right_side)
-            log_iteration_values(t_2, u)
 
         solution.append(u[:])
         t += tau

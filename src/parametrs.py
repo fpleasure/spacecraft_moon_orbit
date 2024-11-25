@@ -1,5 +1,5 @@
 import numpy as np
-
+from typing import Callable
 
 # Параметры варианта
 M_0: float = 3000  # Начальная масса СВ [кг]
@@ -13,21 +13,21 @@ W_EFF: float = 3510  # Эффективная скорость истечени�
 def G_X(x: float, y: float):
     """Проекция ускорения от гравитационного 
     поля Луны на ось Ох [м/с^2]"""
-    return - MU_M * x / pow((x ** 2 + (R_M + y) ** 2), 1.5)
+    return - MU_M * x / pow((x ** 2. + (R_M + y) ** 2.), 1.5)
 
 
 def G_Y(x: float, y: float):
     """Проекция ускорения от гравитационного 
     поля Луны на ось Оу [м/с^2]"""
-    return - MU_M * (R_M + y) / pow((x ** 2 + (R_M + y) ** 2), 1.5)
+    return - MU_M * (R_M + y) / pow((x ** 2. + (R_M + y) ** 2.), 1.5)
 
 
 def P(t: float, t_1: float, t_2: float):
     """Тяга [Н]"""
-    if t <= t_1 or t >= t_2:
-        return 10.27 * 10 ** 3
-    else:
-        return 0
+    # if t <= t_1 or t > t_2:
+    return 10.27 * 10 ** 3
+    # else:
+    #    return 0
 
 
 def BETA(t: float, t_1: float, t_2: float):
@@ -38,19 +38,18 @@ def BETA(t: float, t_1: float, t_2: float):
 def THETA(theta_1: float, theta_2: float,
           t_1: float, t_2: float, t: float):
     """Угол тангажа [рад]"""
-    if 0 <= t and t <= T_V:
-        return np.pi / 2
-    elif T_V <= t and t <= t_1:
-        # print("test ", tHeta_1)
-        return np.pi / 2 + theta_1 * (t - T_V)
-    elif t_1 <= t and t <= t_2:
+    if t <= T_V:
+        return np.pi / 2.
+    elif T_V <= t and t < t_1:
+        return np.pi / 2. + theta_1 * (t - T_V)
+    elif t_1 <= t and t < t_2:
         return 0
     elif t_2 <= t:
         return theta_2
 
 
 def FUNCTION_RIGHT_SIDE(u: list, t: float, theta_1: float, theta_2: float,
-                        t_1: float, t_2: float):
+                        t_1: float, t_2: float, P: Callable):
     """Вектор правой части системы"""
     dVx_dt = P(t, t_1, t_2) / u[4] * np.cos(THETA(theta_1,
                                                   theta_2, t_1, t_2, t)) + G_X(u[2], u[3])
@@ -58,7 +57,7 @@ def FUNCTION_RIGHT_SIDE(u: list, t: float, theta_1: float, theta_2: float,
                                                   theta_2, t_1, t_2, t)) + G_Y(u[2], u[3])
     dx_dt = u[0]
     dy_dt = u[1]
-    dm_dt = - BETA(t, t_1, t_2)
+    dm_dt = - P(t, t_1, t_2) / W_EFF
 
     return dVx_dt, dVy_dt, dx_dt, dy_dt, dm_dt
 

@@ -4,14 +4,15 @@ from typing import Callable
 from parametrs import *
 
 
-def runge_kutta_4_step(u: list, t: float, tau: float,
-                       function_right_side: Callable):
+def runge_kutta_4_step(
+    u: np.ndarray, t: float, tau: float, function_right_side: Callable[[np.ndarray, float], np.ndarray]
+) -> np.ndarray:
     """
-    Выполняет один шаг метода Рунге-Кутты 4-го порядка для системы ОДУ.
+    Выполняет один шаг метода Рунге-Кутты 4-го порядка для системы ОДУ с использованием NumPy.
 
     Параметры:
     ----------
-    - u (list): Текущее значение векторного состояния системы.
+    - u (np.ndarray): Текущее значение векторного состояния системы.
     - t (float): Текущее время.
     - tau (float): Шаг интегрирования.
     - function_right_side (Callable): Функция правой части ОДУ, которая
@@ -19,19 +20,19 @@ def runge_kutta_4_step(u: list, t: float, tau: float,
 
     Возвращает:
     ----------
-    - u_next (list): Значение состояния системы на следующем временном шаге.
+    - u_next (np.ndarray): Значение состояния системы на следующем временном шаге.
     """
-    k1 = function_right_side(u, t)
-    k2 = function_right_side(
-        [ui + tau * k1_i / 2 for ui, k1_i in zip(u, k1)], t + tau / 2)
-    k3 = function_right_side(
-        [ui + tau * k2_i / 2 for ui, k2_i in zip(u, k2)], t + tau / 2)
-    k4 = function_right_side(
-        [ui + tau * k3_i for ui, k3_i in zip(u, k3)], t + tau)
+    # Преобразование входных данных в np.ndarray (если еще не массив)
+    u = np.asarray(u, dtype=float)
 
-    u_next = [ui + (tau / 6) * (k1_i + 2 * k2_i + 2 * k3_i + k4_i)
-              for ui, k1_i, k2_i, k3_i, k4_i in zip(u, k1, k2, k3, k4)]
+    k1 = np.asarray(function_right_side(u, t), dtype=float)
+    k2 = np.asarray(function_right_side(
+        u + tau * k1 / 2., t + tau / 2.), dtype=float)
+    k3 = np.asarray(function_right_side(
+        u + tau * k2 / 2., t + tau / 2.), dtype=float)
+    k4 = np.asarray(function_right_side(u + tau * k3, t + tau), dtype=float)
 
+    u_next = u + (tau / 6.) * (k1 + 2. * k2 + 2. * k3 + k4)
     return u_next
 
 
