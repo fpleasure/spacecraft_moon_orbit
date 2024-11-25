@@ -35,8 +35,8 @@ def log_iteration_values(t, u, filename="results/output.txt"):
     try:
         with open(filename, "a") as file:
             # Преобразуем значения времени и вектора u в строку
-            u_str = " ".join(map(str, u))
-            line = f"{t} {u_str}\n"
+            u_str = " ".join(f"{val:.7f}" for val in u)
+            line = f"{t:.7f} {u_str}\n"
             file.write(line)
     except Exception as e:
         print(f"[ERROR] Не удалось записать значения t и u в файл {
