@@ -119,7 +119,7 @@ def get_theta(u: list, t: float, tau: float, theta_1: float,
 
 def spacecraft_algorithm(u_0: list, t_0: float, tau: float, theta_1: float, theta_2:
                          float, t_1: float, t_2: float, max_iterations: int = 1500000,
-                         eps: float = 1e-9, delta: float = 1e-12):
+                         eps: float = 1e-7, delta: float = 1e-12):
     """Определение программы выведения КА на орбиту искусственного спутника Луны
 
     Параметры:
@@ -205,6 +205,7 @@ def spacecraft_algorithm(u_0: list, t_0: float, tau: float, theta_1: float, thet
         # Дробление шага
         if stop_condition < eps and SPEED_CONDITION(u[0], u[1]) > eps:
             tau = tau / 2.
+            t -= tau
             u = solution[-1]
             print(f"[INFO] Crash step: tau: {tau}.")
 
