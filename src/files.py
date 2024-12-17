@@ -15,7 +15,8 @@ def initialize_output_file(filename="results/output.txt"):
     """
     try:
         with open(filename, "w") as file:
-            file.write("t m v_x v_y x y h v r theta angle_condition\n")
+            file.write(
+                "t m v_x v_y x y h v r theta angle_condition phi alpha\n")
         # print(f"[INFO] Файл {filename} успешно инициализирован.")
     except Exception as e:
         print(f"[ERROR] Не удалось инициализировать файл {filename}: {e}")
@@ -39,12 +40,11 @@ def log_iteration_values(t, u, theta, angle, filename="results/output.txt"):
         with open(filename, "a") as file:
             # Преобразуем значения времени и вектора u в строку
             u_vec = [t, u[-1], u[0], u[1], u[2], u[3],
-                     H, pow(u[0] ** 2 + u[1]**2, 0.5),
-                     pow(u[2] ** 2 + (u[3] + R_M)**2, 0.5),
-                     theta, angle
-                     ]
+                     H, pow(u[0] ** 2 + u[1] ** 2, 0.5),
+                     pow(u[2] ** 2 + (u[3] + R_M) ** 2, 0.5),
+                     theta, angle, PHI(u[2], u[3]), ALPHA(u[0], u[1], theta)]
             u_str = " ".join(f"{val:.7f}" for val in u_vec)
-            line = f"{t:.7f} {u_str}\n"
+            line = f"{u_str}\n"
             file.write(line)
     except Exception as e:
         print(f"[ERROR] Не удалось записать значения t и u в файл {
